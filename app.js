@@ -200,6 +200,30 @@ function createLessonCard(lesson) {
 
     card.append(time, content, actions);
 
+    const noteButton = document.createElement("button");
+
+    noteButton.type = "button";
+    noteButton.className = "lesson-note-button";
+    noteButton.textContent = "🗒️";
+    noteButton.title = lesson.note
+        ? "Просмотреть или изменить замечание"
+        : "Добавить замечание";
+    noteButton.setAttribute(
+        "aria-label",
+        noteButton.title
+    );
+
+    if (lesson.note?.trim()) {
+        noteButton.classList.add("has-note");
+    }
+
+    noteButton.addEventListener("click", event => {
+        event.stopPropagation();
+        openNoteDialog(lesson.id);
+    });
+
+    card.append(noteButton);
+
     return card;
 }
 
@@ -584,5 +608,125 @@ async function initApp() {
         );
     }
 }
+
+// 20. Замечания
+const noteDialog = document.getElementById("note-dialog");
+const noteTextarea = document.getElementById("lesson-note");
+const saveNoteButton = document.getElementById("save-lesson-note");
+const deleteNoteButton = document.getElementById("delete-lesson-note");
+const closeNoteButton = document.getElementById("close-note-dialog");
+
+let activeNoteLessonId = null;
+
+// Открывает меню замечания для выбранной пары.
+function openNoteDialog(lessonId) {
+    const lesson = lessons.find(item => item.id === lessonId);
+
+    if (!lesson) {
+        return;
+    }
+
+    activeNoteLessonId = lessonId;
+    noteTextarea.value = lesson.note || "";
+
+    // Кнопка удаления нужна только при наличии замечания.
+    deleteNoteButton.hidden = !lesson.note?.trim();
+
+    noteDialog.showModal();
+    noteTextarea.focus();
+}
+
+// Сохраняет текст замечания в существующей записи IndexedDB.
+async function saveLessonNote() {
+    if (activeNoteLessonId === null) {
+        return;
+    }
+
+    const lesson = lessons.find(
+        item => item.id === activeNoteLessonId
+    );
+
+    if (!lesson) {
+        return;
+    }
+
+    const note = noteTextarea.value.trim();
+
+    try {
+        await updateLesson({
+            ...lesson,
+            note
+        });
+
+        // Обновляем данные в памяти приложения.
+        const index = lessons.findIndex(
+            item => item.id === activeNoteLessonId
+        );
+
+        if (index !== -1) {
+            lessons[index] = {
+                ...lessons[index],
+                note
+            };
+        }
+
+        noteDialog.close();
+        renderSchedule();
+    } catch (error) {
+        console.error("Не удалось сохранить замечание:", error);
+        alert("Не удалось сохранить замечание. Попробуй ещё раз.");
+    }
+}
+
+// Удаляет замечание, не удаляя саму пару.
+async function deleteLessonNote() {
+    if (activeNoteLessonId === null) {
+        return;
+    }
+
+    const lesson = lessons.find(
+        item => item.id === activeNoteLessonId
+    );
+
+    if (!lesson) {
+        return;
+    }
+
+    try {
+        await updateLesson({
+            ...lesson,
+            note: ""
+        });
+
+        const index = lessons.findIndex(
+            item => item.id === activeNoteLessonId
+        );
+
+        if (index !== -1) {
+            lessons[index] = {
+                ...lessons[index],
+                note: ""
+            };
+        }
+
+        noteDialog.close();
+        renderSchedule();
+    } catch (error) {
+        console.error("Не удалось удалить замечание:", error);
+        alert("Не удалось удалить замечание. Попробуй ещё раз.");
+    }
+}
+
+saveNoteButton.addEventListener("click", saveLessonNote);
+deleteNoteButton.addEventListener("click", deleteLessonNote);
+
+closeNoteButton.addEventListener("click", () => {
+    noteDialog.close();
+});
+
+// Обновляем видимость кнопки удаления при изменении текста.
+noteTextarea.addEventListener("input", () => {
+    deleteNoteButton.hidden = !noteTextarea.value.trim();
+});
 
 initApp();

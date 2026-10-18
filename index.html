@@ -19,6 +19,28 @@
 <body>
     <div class="app">
 
+        <dialog id="note-dialog" class="note-dialog">
+            <div class="note-dialog-header">
+                <h2>Замечание к паре</h2>
+                <button type="button" id="close-note-dialog" aria-label="Закрыть">
+                    ✕
+                </button>
+            </div>
+
+            <textarea id="lesson-note" placeholder="Запиши домашнее задание, напоминание или другую заметку..." rows="6"
+                maxlength="3000"></textarea>
+
+            <div class="note-dialog-actions">
+                <button type="button" id="delete-lesson-note" class="note-delete" hidden>
+                    Удалить замечание
+                </button>
+
+                <button type="button" id="save-lesson-note" class="note-save">
+                    Сохранить
+                </button>
+            </div>
+        </dialog>
+
         <!-- шапка приложения -->
         <header class="header">
             <div class="header-text">
