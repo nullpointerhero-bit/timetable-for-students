@@ -41,6 +41,8 @@ const importFile = document.getElementById("import-file");
 const importDuration = document.getElementById("import-duration");
 const importStatus = document.getElementById("import-status");
 
+const weekToggleButton = document.getElementById("week-toggle-button");
+
 document
     .getElementById("open-import-dialog")
     .addEventListener("click", () => {
@@ -133,6 +135,10 @@ let lessons = [];
 let currentView = "today";
 let selectedDay = new Date().getDay();
 
+// Номер текущей учебной недели сохраняется между запусками.
+let selectedWeek = Number(localStorage.getItem("selectedWeek")) === 2
+    ? 2
+    : 1;
 
 // ========================================
 // 3. Вспомогательные функции
@@ -169,10 +175,30 @@ function sortLessons(items) {
     });
 }
 
+// Определяет, должна ли пара отображаться на выбранной неделе.
+function isLessonForCurrentWeek(lesson) {
+    const note = (lesson.note || "").toLocaleLowerCase("ru-RU");
+
+    const week1 = /по\s+1\s+неделе/i.test(note);
+    const week2 = /по\s+2\s+неделе/i.test(note);
+
+    // Если указаны обе недели или ни одна, пара отображается всегда.
+    if (week1 === week2) {
+        return true;
+    }
+
+    return selectedWeek === 1 ? week1 : week2;
+}
+
+// Возвращает занятия выбранного дня с учётом недели.
+
 // Возвращает занятия выбранного дня.
 function getLessonsForDay(day) {
     return sortLessons(
-        lessons.filter(lesson => lesson.dayOfWeek === day)
+        lessons.filter(lesson =>
+            lesson.dayOfWeek === day &&
+            isLessonForCurrentWeek(lesson)
+        )
     );
 }
 
@@ -381,7 +407,12 @@ function renderSchedule() {
 
     // В недельном режиме показываем все семь дней.
     scheduleTitle.textContent = "вся неделя";
-    lessonCount.textContent = formatLessonCount(lessons.length);
+
+    const visibleLessonCount = lessons.filter(
+        isLessonForCurrentWeek
+    ).length;
+
+    lessonCount.textContent = formatLessonCount(visibleLessonCount);
 
     // Начинаем с понедельника.
     const weekOrder = [1, 2, 3, 4, 5, 6, 0];
@@ -419,6 +450,28 @@ todayViewButton.addEventListener("click", () => {
 weekViewButton.addEventListener("click", () => {
     setView("week");
 });
+
+// Переключение между первой и второй учебными неделями.
+function updateWeekButton() {
+    weekToggleButton.textContent = `${selectedWeek} неделя`;
+    weekToggleButton.setAttribute(
+        "aria-pressed",
+        String(selectedWeek === 2)
+    );
+    weekToggleButton.title =
+        `Сейчас отображается ${selectedWeek}-я учебная неделя`;
+}
+
+weekToggleButton.addEventListener("click", () => {
+    selectedWeek = selectedWeek === 1 ? 2 : 1;
+
+    localStorage.setItem("selectedWeek", String(selectedWeek));
+
+    updateWeekButton();
+    renderSchedule();
+});
+
+updateWeekButton();
 
 
 // ========================================

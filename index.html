@@ -24,8 +24,7 @@
 
             <form id="import-form">
                 <label for="import-url">Ссылка на страницу расписания</label>
-                <input type="url" id="import-url"
-                    placeholder="">
+                <input type="url" id="import-url" placeholder="">
 
                 <p>Или выбери сохранённый HTML-файл:</p>
                 <input type="file" id="import-file" accept=".html,.htm,text/html">
@@ -78,9 +77,16 @@
                     загружаем дату...
                 </p>
             </div>
-            <button type="button" class="view-button" id="open-import-dialog" aria-pressed="false">
-                импорт расписания
-            </button>
+            <div class="header-actions">
+                <button type="button" class="view-button week-toggle-button" id="week-toggle-button"
+                    aria-label="Переключить учебную неделю" aria-pressed="false">
+                    1 неделя
+                </button>
+
+                <button type="button" class="view-button" id="open-import-dialog">
+                    импорт расписания
+                </button>
+            </div>
         </header>
 
         <main>
