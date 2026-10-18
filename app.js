@@ -41,7 +41,7 @@ const importFile = document.getElementById("import-file");
 const importDuration = document.getElementById("import-duration");
 const importStatus = document.getElementById("import-status");
 
-const weekToggleButton = document.getElementById("week-toggle-button");
+const weekToggleButton = document.getElementById("week-indicator");
 
 document
     .getElementById("open-import-dialog")
@@ -136,9 +136,37 @@ let currentView = "today";
 let selectedDay = new Date().getDay();
 
 // Номер текущей учебной недели сохраняется между запусками.
-let selectedWeek = Number(localStorage.getItem("selectedWeek")) === 2
-    ? 2
-    : 1;
+// Понедельник первой учебной недели: 12 октября 2026 года.
+const FIRST_WEEK_START = Date.UTC(2026, 9, 12);
+
+const MILLISECONDS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+function getCurrentWeek() {
+    const now = new Date();
+
+    // Используем календарную дату в локальном часовом поясе.
+    const today = Date.UTC(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+
+    // Определяем понедельник текущей недели.
+    const weekday = new Date(today).getUTCDay();
+    const daysSinceMonday = (weekday + 6) % 7;
+    const currentWeekStart =
+        today - daysSinceMonday * 24 * 60 * 60 * 1000;
+
+    const weeksElapsed = Math.floor(
+        (currentWeekStart - FIRST_WEEK_START) /
+        MILLISECONDS_PER_WEEK
+    );
+
+    // Чередуем первую и вторую недели.
+    return ((weeksElapsed % 2 + 2) % 2) + 1;
+}
+
+let selectedWeek = getCurrentWeek();
 
 // ========================================
 // 3. Вспомогательные функции
@@ -453,23 +481,53 @@ weekViewButton.addEventListener("click", () => {
 
 // Переключение между первой и второй учебными неделями.
 function updateWeekButton() {
-    weekToggleButton.textContent = `${selectedWeek} неделя`;
-    weekToggleButton.setAttribute(
-        "aria-pressed",
-        String(selectedWeek === 2)
-    );
-    weekToggleButton.title =
-        `Сейчас отображается ${selectedWeek}-я учебная неделя`;
+    const weekName = selectedWeek === 1
+        ? "первая неделя"
+        : "вторая неделя";
+
+    weekToggleButton.textContent = weekName;
+    weekToggleButton.title = "Неделя определяется автоматически по дате";
 }
+
+function refreshSelectedWeek() {
+    const currentWeek = getCurrentWeek();
+
+    if (currentWeek !== selectedWeek) {
+        selectedWeek = currentWeek;
+        updateWeekButton();
+        renderSchedule();
+    }
+}
+
+updateWeekButton();
+
+// Изменение недели самостоятельно.
 
 weekToggleButton.addEventListener("click", () => {
     selectedWeek = selectedWeek === 1 ? 2 : 1;
 
-    localStorage.setItem("selectedWeek", String(selectedWeek));
+    const weekName = selectedWeek === 1
+        ? "первая неделя"
+        : "вторая неделя";
+
+    weekToggleButton.textContent = weekName;
+    weekToggleButton.title = "Неделя определяется автоматически. Нажмите для ручного изменения";
 
     updateWeekButton();
     renderSchedule();
 });
+
+// Проверяем дату при возвращении на вкладку.
+window.addEventListener("focus", refreshSelectedWeek);
+
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        refreshSelectedWeek();
+    }
+});
+
+// Обновляем расписание, даже если вкладка всё время открыта.
+setInterval(refreshSelectedWeek, 60_000);
 
 updateWeekButton();
 
