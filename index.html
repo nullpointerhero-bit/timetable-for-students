@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#f7f5fc">
+    <meta name="description" content="Личное расписание занятий студента">
+
+    <title>Расписание студента</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="database.js" defer></script>
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- шапка приложения -->
+        <header class="header">
+            <div class="header-text">
+                <p class="eyebrow">ТВОЙ УЧЕБНЫЙ ДЕНЬ</p>
+                <h1>расписание<span class="accent">.</span></h1>
+                <p id="current-date" class="current-date">
+                    загружаем дату...
+                </p>
+            </div>
+        </header>
+
+        <main>
+            <!-- переключение режима просмотра -->
+            <nav class="view-switch" aria-label="Режим просмотра">
+                <button type="button" class="view-button active" id="today-view" aria-pressed="true">
+                    сегодня
+                </button>
+
+                <button type="button" class="view-button" id="week-view" aria-pressed="false">
+                    неделя
+                </button>
+            </nav>
+
+            <!-- выбор дня недели -->
+            <section id="week-navigation" class="week-navigation" aria-label="Выбор дня недели" hidden>
+                <button type="button" data-day="1">пн</button>
+                <button type="button" data-day="2">вт</button>
+                <button type="button" data-day="3">ср</button>
+                <button type="button" data-day="4">чт</button>
+                <button type="button" data-day="5">пт</button>
+                <button type="button" data-day="6">сб</button>
+                <button type="button" data-day="0">вс</button>
+            </section>
+
+            <!-- заголовок выбранного дня -->
+            <section class="schedule-section">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">ТВОЙ ПЛАН</p>
+                        <h2 id="schedule-title">сегодня</h2>
+                    </div>
+
+                    <span id="lesson-count" class="lesson-count">
+                        0 пар
+                    </span>
+                </div>
+
+                <!-- сюда javascript добавит карточки занятий -->
+                <div id="schedule-list" class="schedule-list" aria-live="polite">
+                    <div class="empty-state">
+                        <span class="empty-icon" aria-hidden="true">
+                            ✳
+                        </span>
+                        <h3>пока свободно</h3>
+                        <p>добавь первую пару, чтобы заполнить расписание</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- добавление занятия -->
+        <button type="button" id="add-lesson-button" class="add-button">
+            <span aria-hidden="true">+</span>
+            добавить пару
+        </button>
+
+        <!-- форма добавления и редактирования -->
+        <dialog id="lesson-dialog" class="lesson-dialog">
+            <form id="lesson-form">
+                <div class="dialog-heading">
+                    <div>
+                        <p class="eyebrow">ТВОЁ РАСПИСАНИЕ</p>
+                        <h2 id="dialog-title">новая пара</h2>
+                    </div>
+
+                    <button type="button" id="close-dialog-button" class="close-button" aria-label="Закрыть форму">
+                        &times;
+                    </button>
+                </div>
+
+                <input type="hidden" id="lesson-id">
+
+                <label for="lesson-subject">Название предмета</label>
+                <input type="text" id="lesson-subject" name="subject" placeholder="например, программирование"
+                    maxlength="100" required>
+
+                <label for="lesson-day">День недели</label>
+                <select id="lesson-day" name="dayOfWeek" required>
+                    <option value="1">понедельник</option>
+                    <option value="2">вторник</option>
+                    <option value="3">среда</option>
+                    <option value="4">четверг</option>
+                    <option value="5">пятница</option>
+                    <option value="6">суббота</option>
+                    <option value="0">воскресенье</option>
+                </select>
+
+                <div class="time-fields">
+                    <input type="text" id="lesson-start" name="startTime" placeholder="09:00" maxlength="5"
+                        pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="Введи время в формате ЧЧ:ММ, например 14:30"
+                        autocomplete="off" required>
+
+                    <input type="text" id="lesson-end" name="endTime" placeholder="10:30" maxlength="5"
+                        pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="Введи время в формате ЧЧ:ММ, например 14:30"
+                        autocomplete="off" required>
+                </div>
+
+                <label for="lesson-teacher">Преподаватель</label>
+                <input type="text" id="lesson-teacher" name="teacher" placeholder="необязательно" maxlength="100">
+
+                <label for="lesson-classroom">Аудитория</label>
+                <input type="text" id="lesson-classroom" name="classroom" placeholder="например, 304" maxlength="50">
+
+                <p id="form-error" class="form-error" role="alert" hidden></p>
+
+                <div class="dialog-actions">
+                    <button type="button" id="cancel-button" class="secondary-button">
+                        отмена
+                    </button>
+
+                    <button type="submit" class="save-button">
+                        сохранить
+                    </button>
+                </div>
+            </form>
+        </dialog>
+
+    </div>
+</body>
+
+</html>
