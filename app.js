@@ -34,6 +34,81 @@ const formError = document.getElementById("form-error");
 const closeDialogButton = document.getElementById("close-dialog-button");
 const cancelButton = document.getElementById("cancel-button");
 
+const importDialog = document.getElementById("import-dialog");
+const importForm = document.getElementById("import-form");
+const importUrl = document.getElementById("import-url");
+const importFile = document.getElementById("import-file");
+const importDuration = document.getElementById("import-duration");
+const importStatus = document.getElementById("import-status");
+
+document
+    .getElementById("open-import-dialog")
+    .addEventListener("click", () => {
+        importStatus.textContent = "";
+        importDialog.showModal();
+    });
+
+document
+    .getElementById("close-import-dialog")
+    .addEventListener("click", () => {
+        importDialog.close();
+    });
+
+importForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const url = importUrl.value.trim();
+    const file = importFile.files[0];
+    const duration = Number(importDuration.value);
+
+    if (!url && !file) {
+        importStatus.textContent =
+            "Укажи ссылку или выбери HTML-файл.";
+        return;
+    }
+
+    if (!Number.isInteger(duration) || duration < 1 || duration > 240) {
+        importStatus.textContent =
+            "Длительность должна быть от 1 до 240 минут.";
+        return;
+    }
+
+    try {
+        importStatus.textContent = "Загружаю и анализирую расписание...";
+
+        const importedLessons = file
+            ? await importScheduleFromFile(file, duration)
+            : await importScheduleFromUrl(url, duration);
+
+        const confirmed = window.confirm(
+            `Найдено пар: ${importedLessons.length}.\n` +
+            "Добавить их в существующее расписание?"
+        );
+
+        if (!confirmed) {
+            importStatus.textContent = "Импорт отменён.";
+            return;
+        }
+
+        const { added, skipped } =
+            await saveImportedLessons(importedLessons);
+
+        importStatus.textContent =
+            `Импорт завершён. Добавлено: ${added}. ` +
+            `Пропущено повторов: ${skipped}.`;
+
+        importUrl.value = "";
+        importFile.value = "";
+    } catch (error) {
+        console.error("Ошибка импорта расписания:", error);
+
+        importStatus.textContent =
+            error.message.includes("fetch") ||
+                error.name === "TypeError"
+                ? "Не удалось загрузить страницу. Возможно, сайт запрещает запросы из браузера (CORS). Попробуй сохранить страницу как HTML и импортировать файл."
+                : `Ошибка импорта: ${error.message}`;
+    }
+});
 
 // ========================================
 // 2. Состояние приложения
@@ -728,5 +803,237 @@ closeNoteButton.addEventListener("click", () => {
 noteTextarea.addEventListener("input", () => {
     deleteNoteButton.hidden = !noteTextarea.value.trim();
 });
+
+// 21. Импорт расписания
+
+const IMPORT_DAYS = {
+    "понедельник": 1,
+    "вторник": 2,
+    "среда": 3,
+    "четверг": 4,
+    "пятница": 5,
+    "суббота": 6,
+    "воскресенье": 0
+};
+
+function normalizeTime(value) {
+    const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
+
+    if (!match) {
+        return null;
+    }
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+
+    if (hours > 23 || minutes > 59) {
+        return null;
+    }
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function addMinutes(time, duration) {
+    const [hours, minutes] = time.split(":").map(Number);
+    const total = hours * 60 + minutes + duration;
+
+    if (total >= 24 * 60) {
+        return null;
+    }
+
+    const endHours = Math.floor(total / 60);
+    const endMinutes = total % 60;
+
+    return `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
+}
+
+function getCellLines(cell) {
+    const container = document.createElement("div");
+
+    container.innerHTML = cell.innerHTML.replace(
+        /<br\s*\/?>/gi,
+        "\n"
+    );
+
+    return (container.textContent || "")
+        .split(/\n/)
+        .map(line => line.replace(/\s+/g, " ").trim())
+        .filter(Boolean);
+}
+
+/**
+ * Парсит HTML страницы по шаблону расписания из файла.
+ * Возвращает массив объектов пар без идентификаторов БД.
+ */
+function parseUniversitySchedule(html, duration = 45) {
+    const documentHtml = new DOMParser().parseFromString(
+        html,
+        "text/html"
+    );
+
+    const days = documentHtml.querySelectorAll(".day-div");
+    const result = [];
+
+    if (!days.length) {
+        throw new Error(
+            "Не найдено расписание подходящего формата."
+        );
+    }
+
+    for (const dayElement of days) {
+        const dayTitle = dayElement
+            .querySelector(".day-title")
+            ?.textContent
+            ?.trim()
+            .toLocaleLowerCase("ru-RU");
+
+        const dayOfWeek = IMPORT_DAYS[dayTitle];
+
+        if (dayOfWeek === undefined) {
+            continue;
+        }
+
+        const rows = dayElement.querySelectorAll(
+            ".day-table-row"
+        );
+
+        for (const row of rows) {
+            const timeText = row
+                .querySelector(".day-time .time_std")
+                ?.textContent;
+
+            const startTime = timeText
+                ? normalizeTime(timeText)
+                : null;
+
+            const subjectCell = row.querySelector(".day-subject");
+
+            if (!startTime || !subjectCell) {
+                continue;
+            }
+
+            const lines = getCellLines(subjectCell);
+
+            if (!lines.length) {
+                continue;
+            }
+
+            // Пропускаем строки, которые обозначают перерыв.
+            if (/^перерыв$/i.test(lines[0])) {
+                continue;
+            }
+
+            // Сохраняем сведения о неделе, если они указаны.
+            const weekNotes = lines.filter(line =>
+                /^по\s+[12]\s+неделе$/i.test(line)
+            );
+
+            const contentLines = lines.filter(line =>
+                !/^по\s+[12]\s+неделе$/i.test(line)
+            );
+
+            if (!contentLines.length) {
+                continue;
+            }
+
+            const subject = contentLines[0];
+
+            // В этом шаблоне аудитория и тип занятия находятся
+            // в одной строке, например "лекция а.1-418".
+            const locationIndex = contentLines.findIndex(line =>
+                /^(?:лекция|лаб\.?|пр\.?)\s*/i.test(line)
+            );
+
+            const classroom = locationIndex !== -1
+                ? contentLines[locationIndex]
+                : "";
+
+            const teacherLines = contentLines.filter(
+                (line, index) =>
+                    index !== 0 && index !== locationIndex
+            );
+
+            const teacher = teacherLines.join(", ");
+            const endTime = addMinutes(startTime, duration);
+
+            if (!endTime || endTime <= startTime) {
+                continue;
+            }
+
+            result.push({
+                subject,
+                dayOfWeek,
+                startTime,
+                endTime,
+                teacher,
+                classroom,
+                note: weekNotes.join("; ")
+            });
+        }
+    }
+
+    if (!result.length) {
+        throw new Error(
+            "Подходящие пары не найдены. Проверь структуру HTML."
+        );
+    }
+
+    return result;
+}
+
+async function importScheduleFromUrl(url, duration = 45) {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(
+            `Сайт вернул ошибку HTTP ${response.status}.`
+        );
+    }
+
+    const html = await response.text();
+
+    return parseUniversitySchedule(html, duration);
+}
+
+async function importScheduleFromFile(file, duration = 45) {
+    const html = await file.text();
+
+    return parseUniversitySchedule(html, duration);
+}
+
+function isDuplicateLesson(importedLesson) {
+    return lessons.some(lesson =>
+        lesson.dayOfWeek === importedLesson.dayOfWeek &&
+        lesson.startTime === importedLesson.startTime &&
+        lesson.subject === importedLesson.subject &&
+        (lesson.teacher || "") === importedLesson.teacher &&
+        (lesson.classroom || "") === importedLesson.classroom
+    );
+}
+
+async function saveImportedLessons(importedLessons) {
+    let added = 0;
+    let skipped = 0;
+
+    for (const lesson of importedLessons) {
+        if (isDuplicateLesson(lesson)) {
+            skipped++;
+            continue;
+        }
+
+        const id = await addLesson(lesson);
+
+        lessons.push({
+            ...lesson,
+            id
+        });
+
+        added++;
+    }
+
+    renderSchedule();
+
+    return { added, skipped };
+}
 
 initApp();
