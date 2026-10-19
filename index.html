@@ -42,7 +42,7 @@
                 <input type="file" id="import-file" accept=".html,.htm,text/html">
 
                 <label for="import-duration">
-                    Длительность пары в минутах
+                    Длительность занятия в минутах
                 </label>
                 <input type="number" id="import-duration" value="45" min="1" max="240" required>
 
@@ -62,7 +62,7 @@
 
         <dialog id="note-dialog" class="note-dialog">
             <div class="note-dialog-header">
-                <h2>Замечание к паре</h2>
+                <h2>Замечание к уроку</h2>
                 <button type="button" id="close-note-dialog" aria-label="Закрыть">
                     ✕
                 </button>
@@ -135,7 +135,7 @@
                     </div>
 
                     <span id="lesson-count" class="lesson-count">
-                        0 пар
+                        0 занятий
                     </span>
                 </div>
 
@@ -146,7 +146,7 @@
                             ✳
                         </span>
                         <h3>пока свободно</h3>
-                        <p>добавь первую пару, чтобы заполнить расписание</p>
+                        <p>добавь первый урок, чтобы заполнить расписание</p>
                     </div>
                 </div>
             </section>
@@ -155,7 +155,7 @@
             <div class="schedule-actions">
                 <button type="button" id="add-lesson-button" class="add-button">
                     <span aria-hidden="true">+</span>
-                    добавить пару
+                    добавить занятие
                 </button>
 
                 <button type="button" id="back-to-top-button" class="back-to-top-button" aria-label="Вернуться наверх"
@@ -171,7 +171,7 @@
                 <div class="dialog-heading">
                     <div>
                         <p class="eyebrow">ТВОЁ РАСПИСАНИЕ</p>
-                        <h2 id="dialog-title">новая пара</h2>
+                        <h2 id="dialog-title">новый урок</h2>
                     </div>
 
                     <button type="button" id="close-dialog-button" class="close-button" aria-label="Закрыть форму">
