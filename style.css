@@ -116,6 +116,7 @@ button:disabled {
 
 .header-actions {
     display: flex;
+    justify-content: flex-end;
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
@@ -129,12 +130,13 @@ button:disabled {
 }
 
 .week-toggle-button {
-    background: var(--color-primary-light);
-    color: var(--color-primary-dark);
+    color: #7041bc;
+    font-size: 11px;
 }
 
 .week-toggle-button:hover {
-    background: #e2d4f8;
+    color: #7041bc;
+    cursor: pointer;
 }
 
 .eyebrow {
@@ -260,6 +262,53 @@ button:disabled {
 /* ==============================
    6. Заголовок расписания
    ============================== */
+
+/* Кнопки под расписанием */
+.schedule-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+}
+
+.schedule-actions .add-button {
+    flex: 1;
+}
+
+/* Кнопка возврата наверх */
+.back-to-top-button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 48px;
+    width: 48px;
+    min-height: 48px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgb(100 61 166 / 25%);
+    font-family: inherit;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.back-to-top-button:hover {
+    background: var(--color-primary-dark);
+    box-shadow: 0 10px 28px rgb(100 61 166 / 32%);
+    transform: translateY(-2px);
+}
+
+.back-to-top-button:active {
+    transform: translateY(0);
+}
+
+.back-to-top-button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
 
 .schedule-section {
     margin-top: 8px;
@@ -936,4 +985,264 @@ button:disabled {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.header-text {
+    min-width: 0;
+}
+
+.header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .header {
+        gap: 12px;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .header-actions .view-button {
+        max-width: 150px;
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+/* Форма импорта в едином стиле приложения */
+#import-dialog {
+    width: calc(100% - 28px);
+    max-width: 460px;
+}
+
+#import-dialog::backdrop {
+    background: rgb(31 22 45 / 45%);
+    backdrop-filter: blur(4px);
+}
+
+#import-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#import-form label {
+    margin-top: 5px;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+#import-form input[type="url"],
+#import-form input[type="number"] {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 13px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    transition: border-color var(--transition),
+                box-shadow var(--transition);
+}
+
+#import-form input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgb(137 89 214 / 10%);
+    outline: none;
+}
+
+#import-form input[type="file"] {
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.import-button {
+
+    border: #2b2137;
+    border-radius: 1px;
+
+    background: transparent;
+
+    font-size: 11px;
+
+    cursor: pointer;
+    transition:
+        background var(--transition),
+        color var(--transition),
+        box-shadow var(--transition);
+}
+
+.import-description {
+    margin: 6px 0 0;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.import-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.import-actions button {
+    min-width: 0;
+    min-height: 48px;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.import-actions .secondary-button {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+}
+
+.import-actions .secondary-button:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+}
+
+.import-actions .save-button {
+    border: 1px solid var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.import-actions .save-button:hover {
+    border-color: var(--color-primary-dark);
+    background: var(--color-primary-dark);
+}
+
+.import-status {
+    margin: 12px 0 0;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 360px) {
+    #import-dialog {
+        padding: 20px 16px;
+    }
+
+    .import-actions {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Кнопки управления под расписанием */
+.schedule-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+/* Отменяем фиксированное положение кнопки добавления */
+.schedule-actions .add-button {
+    position: static;
+    left: auto;
+    bottom: auto;
+    transform: none;
+
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+}
+
+/* Кнопка возврата наверх справа */
+.schedule-actions .back-to-top-button {
+    position: static;
+    flex: 0 0 56px;
+    width: 56px;
+    min-height: 56px;
+    margin: 0;
+}
+
+/* Закреплённые кнопки на мобильных устройствах */
+@media (max-width: 600px) {
+    .schedule-actions {
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 10px;
+
+        width: 100%;
+        margin: 0;
+        padding: 12px 20px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+
+        background: var(--color-background);
+        border-top: 1px solid var(--color-border);
+    }
+
+    .schedule-actions .add-button {
+        position: static;
+        left: auto;
+        bottom: auto;
+        transform: none;
+
+        flex: 1 1 auto;
+        width: auto;
+        max-width: none;
+        min-width: 0;
+        min-height: 52px;
+        margin: 0;
+    }а
+
+    .schedule-actions .back-to-top-button {
+        position: static;
+        flex: 0 0 52px;
+        width: 52px;
+        min-height: 52px;
+        height: auto;
+        margin: 0;
+    }
+
+    /* Не даём закреплённым кнопкам перекрывать последние пары */
+    main {
+        padding-bottom: calc(env(safe-area-inset-bottom));
+    }
+}
+
+.header-actions .import-button {
+    box-sizing: border-box;
+    width: 100%;
+    margin-right: 0;
+    padding-right: 0;
+    text-align: right;
 }

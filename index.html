@@ -19,14 +19,25 @@
 <body>
     <div class="app">
 
-        <dialog id="import-dialog">
-            <h2>Импорт расписания</h2>
+        <dialog id="import-dialog" class="lesson-dialog">
+            <div class="dialog-heading">
+                <div>
+                    <p class="eyebrow">ИМПОРТ РАСПИСАНИЯ</p>
+                </div>
+
+                <button type="button" id="close-import-dialog" class="close-button" aria-label="Закрыть окно импорта">
+                    &times;
+                </button>
+            </div>
 
             <form id="import-form">
                 <label for="import-url">Ссылка на страницу расписания</label>
-                <input type="url" id="import-url" placeholder="">
+                <input type="url" id="import-url" placeholder="https://example.com/schedule">
 
-                <p>Или выбери сохранённый HTML-файл:</p>
+                <p class="import-description">
+                    Или выбери сохранённый HTML-файл
+                </p>
+
                 <input type="file" id="import-file" accept=".html,.htm,text/html">
 
                 <label for="import-duration">
@@ -35,14 +46,17 @@
                 <input type="number" id="import-duration" value="45" min="1" max="240" required>
 
                 <div class="import-actions">
-                    <button type="submit">Импортировать</button>
-                    <button type="button" id="close-import-dialog">
-                        Отмена
+                    <button type="button" id="cancel-import-dialog" class="secondary-button">
+                        отмена
+                    </button>
+
+                    <button type="submit" class="save-button">
+                        импортировать
                     </button>
                 </div>
             </form>
 
-            <p id="import-status" role="status" aria-live="polite"></p>
+            <p id="import-status" class="import-status" role="status" aria-live="polite"></p>
         </dialog>
 
         <dialog id="note-dialog" class="note-dialog">
@@ -67,9 +81,9 @@
             </div>
         </dialog>
 
+
         <!-- шапка приложения -->
         <header class="header">
-
             <div class="header-text">
                 <p class="eyebrow">ТВОЙ УЧЕБНЫЙ ДЕНЬ</p>
                 <h1>расписание<span class="accent">.</span></h1>
@@ -77,11 +91,12 @@
                     загружаем дату...
                 </p>
             </div>
-            <div class="header-actions">
-                <div id="week-indicator" class="view-button" aria-live="polite"></div>
 
-                <button type="button" class="view-button" id="open-import-dialog">
-                    импорт расписания
+            <div class="header-actions">
+                <div id="week-indicator" class="week-toggle-button eyebrow" aria-live="polite"></div>
+
+                <button type="button" class="import-button eyebrow" id="open-import-dialog">
+                    ИМПОРТ
                 </button>
             </div>
         </header>
@@ -134,13 +149,20 @@
                     </div>
                 </div>
             </section>
-        </main>
 
-        <!-- добавление занятия -->
-        <button type="button" id="add-lesson-button" class="add-button">
-            <span aria-hidden="true">+</span>
-            добавить пару
-        </button>
+            <!-- кнопки управления расписанием -->
+            <div class="schedule-actions">
+                <button type="button" id="add-lesson-button" class="add-button">
+                    <span aria-hidden="true">+</span>
+                    добавить пару
+                </button>
+
+                <button type="button" id="back-to-top-button" class="back-to-top-button" aria-label="Вернуться наверх"
+                    title="Наверх">
+                    <span aria-hidden="true">↑</span>
+                </button>
+            </div>
+        </main>
 
         <!-- форма добавления и редактирования -->
         <dialog id="lesson-dialog" class="lesson-dialog">
