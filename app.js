@@ -1,6 +1,21 @@
 
 "use strict";
 
+// 0. Service Worker
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+        try {
+            await navigator.serviceWorker.register("./sw.js");
+            console.log("service worker зарегистрирован");
+        } catch (error) {
+            console.error(
+                "ошибка регистрации service worker:",
+                error
+            );
+        }
+    });
+}
+
 // ========================================
 // 1. Элементы интерфейса
 // ========================================
