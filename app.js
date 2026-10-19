@@ -16,6 +16,7 @@ const lessonCount = document.getElementById("lesson-count");
 const scheduleList = document.getElementById("schedule-list");
 
 const addLessonButton = document.getElementById("add-lesson-button");
+const backToTopButton = document.getElementById("back-to-top-button");
 
 const lessonDialog = document.getElementById("lesson-dialog");
 const lessonForm = document.getElementById("lesson-form");
@@ -50,11 +51,17 @@ document
         importDialog.showModal();
     });
 
+function closeImportDialog() {
+    importDialog.close();
+}
+
 document
     .getElementById("close-import-dialog")
-    .addEventListener("click", () => {
-        importDialog.close();
-    });
+    .addEventListener("click", closeImportDialog);
+
+document
+    .getElementById("cancel-import-dialog")
+    .addEventListener("click", closeImportDialog);
 
 importForm.addEventListener("submit", async event => {
     event.preventDefault();
@@ -83,7 +90,7 @@ importForm.addEventListener("submit", async event => {
             : await importScheduleFromUrl(url, duration);
 
         const confirmed = window.confirm(
-            `Найдено пар: ${importedLessons.length}.\n` +
+            `Найдено занятий: ${importedLessons.length}.\n` +
             "Добавить их в существующее расписание?"
         );
 
@@ -235,13 +242,13 @@ function formatLessonCount(count) {
     const lastDigit = count % 10;
     const lastTwoDigits = count % 100;
 
-    let word = "пар";
+    let word = "занятий";
 
     if (lastTwoDigits < 11 || lastTwoDigits > 14) {
         if (lastDigit === 1) {
-            word = "пара";
+            word = "занятие";
         } else if (lastDigit >= 2 && lastDigit <= 4) {
-            word = "пары";
+            word = "занятия";
         }
     }
 
@@ -305,13 +312,13 @@ function createLessonCard(lesson) {
     }
 
     // Кнопки управления.
+    // Кнопки управления парой и замечанием.
     const actions = createElement("div", "lesson-actions");
 
     const editButton = createElement("button", "", "✎");
     editButton.type = "button";
     editButton.setAttribute("aria-label", "Редактировать занятие");
     editButton.title = "Редактировать";
-
     editButton.addEventListener("click", () => {
         openEditDialog(lesson);
     });
@@ -320,27 +327,16 @@ function createLessonCard(lesson) {
     deleteButton.type = "button";
     deleteButton.setAttribute("aria-label", "Удалить занятие");
     deleteButton.title = "Удалить";
-
     deleteButton.addEventListener("click", () => {
         removeLesson(lesson.id);
     });
 
-    actions.append(editButton, deleteButton);
-
-    card.append(time, content, actions);
-
-    const noteButton = document.createElement("button");
-
+    const noteButton = createElement("button", "lesson-note-button", "🗒️");
     noteButton.type = "button";
-    noteButton.className = "lesson-note-button";
-    noteButton.textContent = "🗒️";
     noteButton.title = lesson.note
         ? "Просмотреть или изменить замечание"
         : "Добавить замечание";
-    noteButton.setAttribute(
-        "aria-label",
-        noteButton.title
-    );
+    noteButton.setAttribute("aria-label", noteButton.title);
 
     if (lesson.note?.trim()) {
         noteButton.classList.add("has-note");
@@ -351,7 +347,8 @@ function createLessonCard(lesson) {
         openNoteDialog(lesson.id);
     });
 
-    card.append(noteButton);
+    actions.append(editButton, deleteButton, noteButton);
+    card.append(time, content, actions);
 
     return card;
 }
@@ -361,7 +358,7 @@ function createLessonCard(lesson) {
 // 6. Пустое расписание
 // ========================================
 
-function createEmptyState(message = "добавь первую пару, чтобы заполнить расписание") {
+function createEmptyState(message = "добавь первое занятие, чтобы заполнить расписание") {
     const empty = createElement("div", "empty-state");
 
     const icon = createElement("span", "empty-icon", "✳");
@@ -482,11 +479,11 @@ weekViewButton.addEventListener("click", () => {
 // Переключение между первой и второй учебными неделями.
 function updateWeekButton() {
     const weekName = selectedWeek === 1
-        ? "первая неделя"
-        : "вторая неделя";
+        ? "ПЕРВАЯ НЕДЕЛЯ"
+        : "ВТОРАЯ НЕДЕЛЯ";
 
     weekToggleButton.textContent = weekName;
-    weekToggleButton.title = "Неделя определяется автоматически по дате";
+    weekToggleButton.title = "Неделя определяется автоматически по дате. Нажмите для изменения вручную";
 }
 
 function refreshSelectedWeek() {
@@ -581,7 +578,7 @@ function openAddDialog() {
     lessonIdInput.value = "";
     lessonDayInput.value = String(new Date().getDay());
 
-    dialogTitle.textContent = "новая пара";
+    dialogTitle.textContent = "новый урок";
 
     clearFormError();
 
@@ -591,6 +588,13 @@ function openAddDialog() {
 }
 
 addLessonButton.addEventListener("click", openAddDialog);
+
+backToTopButton.addEventListener("click", () => {
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+});
 
 
 // ========================================
@@ -608,7 +612,7 @@ function openEditDialog(lesson) {
     lessonTeacherInput.value = lesson.teacher || "";
     lessonClassroomInput.value = lesson.classroom || "";
 
-    dialogTitle.textContent = "редактировать пару";
+    dialogTitle.textContent = "редактировать урок";
 
     clearFormError();
 
@@ -668,11 +672,11 @@ function getLessonFromForm() {
     }
 
     if (!startTime || !endTime) {
-        throw new Error("укажи время начала и окончания пары.");
+        throw new Error("укажи время начала и окончания урока.");
     }
 
     if (startTime >= endTime) {
-        throw new Error("окончание пары должно быть позже её начала.");
+        throw new Error("окончание урока должно быть позже её начала.");
     }
 
     return {
@@ -1085,7 +1089,7 @@ function parseUniversitySchedule(html, duration = 45) {
 
     if (!result.length) {
         throw new Error(
-            "Подходящие пары не найдены. Проверь структуру HTML."
+            "Подходящие занятия не найдены. Проверь структуру HTML."
         );
     }
 
