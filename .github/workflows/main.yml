@@ -19,6 +19,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Clean npm cache
+        run: npm cache clean --force
+
       # 2. Настройка Node.js 18 (Setup Node)
       - name: Setup Node.js 18
         uses: actions/setup-node@v3
