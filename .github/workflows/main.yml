@@ -1,0 +1,38 @@
+name: CI Pipeline
+
+# Условия запуска: push или pull request в ветку main
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  quality-checks:
+    # Используем последнюю версию Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Получение исходного кода (Checkout)
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Настройка Node.js 18 (Setup Node)
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm' # Включает кэширование зависимостей для ускорения пайплайна
+
+      # 3. Установка зависимостей (Install deps)
+      # npm ci быстрее и надежнее, чем npm install, так как использует package-lock.json
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Проверка стиля кода (Lint)
+      - name: Run ESLint
+        run: npm run lint
+
+      # 5. Валидация HTML-разметки (HTML Validate)
+      - name: Validate HTML
+        run: npm run validate:html
