@@ -32,22 +32,18 @@
 - http-server / GitHub Pages (локальный запуск и публикация)
 
 ## Структура репозитория
+```
 /
 ├── index.html # Точка входа
 ├── manifest.json # Манифест PWA
 ├── sw.js # Service Worker
-├── css/
-│ └── style.css # Стили, адаптивная вёрстка
-├── js/
-│ ├── app.js # Инициализация приложения
-│ └── modules/
-│ ├── schedule.js # CRUD пар, валидация
-│ └── db.js # Работа с IndexedDB
-├── tests/ # Тест-кейсы (чек-лист)
+├── style.css # Стили, адаптивная вёрстка
+├── database.js # Работа с базой данных
+├── app.js # Инициализация приложения
 ├── .eslintrc.json # Конфигурация линтера
-├── .env.example # Пример переменных окружения (не требуется для MVP)
+├── .htmlvalidate.json # Конфигурация html-validate
 └── README.md
-
+```
 
 ## Требования к окружению
 - ОС: Windows 10/11, macOS, Linux
