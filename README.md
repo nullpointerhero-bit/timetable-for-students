@@ -55,7 +55,7 @@
 1. Клонировать репозиторий:
    ```bash
    git clone https://github.com/nullpointerhero-bit/timetable-for-students.git
-   cd schedule-pwa
+   cd timetable-for-students
    ```
 2. Установить зависимости (для линтера и локального сервера):
    ```npm install
