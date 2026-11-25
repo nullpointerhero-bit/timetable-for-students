@@ -54,11 +54,13 @@
 ## Установка и запуск
 1. Клонировать репозиторий:
    ```bash
-   git clone <адрес_репозитория>
-   cd schedule-pwa```
+   git clone https://github.com/nullpointerhero-bit/timetable-for-students.git
+   cd schedule-pwa
+   ```
 2. Установить зависимости (для линтера и локального сервера):
    ```npm install
-   npx http-server . -p 8080```
+   npx http-server . -p 8080
+   ```
 3. Открыть в браузере: http://localhost:8080. Проверить работоспособность: открыть экран «Сегодня», добавить пару,
     перезагрузить страницу — пара должна сохраниться.
 Переменные окружения для MVP не требуются; файл .env.example приложен
